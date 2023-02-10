@@ -1,0 +1,10 @@
+Dataset/rawData/train/*
+Dataset/rawData/test/*
+Dataset/wholepose/*
+Dataset/frames/*
+Dataset/features/*
+
+Models/*
+
+pytorch/*
+
