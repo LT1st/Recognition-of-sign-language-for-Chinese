@@ -7,7 +7,7 @@ import random
 import numpy as np
 
 """
-Implementation of Sign Language Dataset
+用于光流数据集读取，保持RGB操作
 """
 class Sign_Isolated(Dataset):
     def __init__(self, data_path, label_path, frames=16, num_classes=226, train=True, transform=None, test_clips=5):

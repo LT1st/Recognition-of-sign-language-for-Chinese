@@ -1,18 +1,18 @@
 ├─Conv3D
-│  │  dataset_sign_clip.py                              数据集切片
-│  │  dataset_sign_flow_clip.py                         数据集
+│  │  dataset_sign_clip.py                              数据集读取、划分
+│  │  dataset_sign_flow_clip.py                         光流数据集读取、划分
 │  │  readme.md
 │  │  requirements.txt
-│  │  Sign_Isolated_Conv3D_clip.py
+│  │  Sign_Isolated_Conv3D_clip.py                      RGB分支
 │  │  Sign_Isolated_Conv3D_clip_finetune.py
 │  │  Sign_Isolated_Conv3D_clip_test.py
-│  │  Sign_Isolated_Conv3D_depth_flow_clip.py
-│  │  Sign_Isolated_Conv3D_depth_flow_clip_finetune.py
+│  │  Sign_Isolated_Conv3D_depth_flow_clip.py           深度分支
+│  │  Sign_Isolated_Conv3D_depth_flow_clip_finetune.py  
 │  │  Sign_Isolated_Conv3D_depth_flow_clip_test.py
-│  │  Sign_Isolated_Conv3D_flow_clip.py
+│  │  Sign_Isolated_Conv3D_flow_clip.py                 光流分支
 │  │  Sign_Isolated_Conv3D_flow_clip_finetune.py
 │  │  Sign_Isolated_Conv3D_flow_clip_test.py
-│  │  Sign_Isolated_Conv3D_hha_clip_mask.py
+│  │  Sign_Isolated_Conv3D_hha_clip_mask.py             HHA分支
 │  │  Sign_Isolated_Conv3D_hha_clip_mask_finetune.py
 │  │  Sign_Isolated_Conv3D_hha_clip_mask_test.py
 │  │  tools.py
@@ -378,7 +378,7 @@
 │              models.py
 │              __init__.py
 │
-├─ensemble
+├─ensemble  用于模型合并
 │  │  ensemble_multimodal_rgb.py
 │  │  ensemble_multimodal_rgbd.py
 │  │  predictions_rgb.csv
