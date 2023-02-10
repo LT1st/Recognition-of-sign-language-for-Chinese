@@ -9,15 +9,28 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 
 
-def get_label_and_pred(model, dataloader, device):
+def get_label_and_pred(model, test_loader, device):
+    """获取所有测试样本的预测结果
+
+    :param model: 模型
+    :type model: _type_
+    :param dataloader: 数据集
+    :type dataloader: _type_
+    :param device: _description_
+    :type device: _type_
+    :return: all_label, all_pred
+    :rtype: numpy，numpy
+    """
     all_label = []
     all_pred = []
+    # 不构建导数图，节省算力
     with torch.no_grad():
         for batch_idx, data in enumerate(test_loader):
             # get the inputs and labels
             inputs, labels = data['data'].to(device), data['label'].to(device)
             # forward
             outputs = model(inputs)
+            # 输出多个，选第一个
             if isinstance(outputs, list):
                 outputs = outputs[0]
             # collect labels & prediction
@@ -33,6 +46,19 @@ def get_label_and_pred(model, dataloader, device):
 
 
 def plot_confusion_matrix(model, dataloader, device, save_path='confmat.png', normalize=True):
+    """绘制混淆矩阵
+
+    :param model: 连号得模型
+    :type model: _type_
+    :param dataloader: 数据集
+    :type dataloader: _type_
+    :param device: _description_
+    :type device: _type_
+    :param save_path: _description_, defaults to 'confmat.png'
+    :type save_path: str, optional
+    :param normalize: _description_, defaults to True
+    :type normalize: bool, optional
+    """
     # Get prediction
     all_label, all_pred = get_label_and_pred(model, dataloader, device)
     confmat = confusion_matrix(all_label, all_pred)
@@ -67,15 +93,26 @@ def plot_confusion_matrix(model, dataloader, device, save_path='confmat.png', no
 
 
 def visualize_attn(I, c):
+    """heatmap
+    https://pytorch.org/vision/stable/auto_examples/plot_visualization_utils.html#sphx-glr-auto-examples-plot-visualization-utils-py
+    :param I: 图像
+    :type I: _type_
+    :param c: feature map
+    :type c: _type_
+    :return: _description_
+    :rtype: _type_
+    """
     # Image
     img = I.permute((1,2,0)).cpu().numpy()
     # Heatmap
     N, C, H, W = c.size()
     a = F.softmax(c.view(N,C,-1), dim=2).view(N,C,H,W)
-    up_factor = 128/H
+    up_factor = 128/H   # 上采样比例
     # print(up_factor, I.size(), c.size())
     if up_factor > 1:
+        # 双线性差值
         a = F.interpolate(a, scale_factor=up_factor, mode='bilinear', align_corners=False)
+    # 若干幅图像拼成一幅图像
     attn = utils.make_grid(a, nrow=4, normalize=True, scale_each=True)
     attn = attn.permute((1,2,0)).mul(255).byte().cpu().numpy()
     attn = cv2.applyColorMap(attn, cv2.COLORMAP_JET)
