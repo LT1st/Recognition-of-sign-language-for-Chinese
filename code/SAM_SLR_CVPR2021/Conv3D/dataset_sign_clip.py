@@ -7,7 +7,7 @@ import random
 import numpy as np
 
 """
-Implementation of Sign Language Dataset
+用于数据集读取、划分
 """
 class Sign_Isolated(Dataset):
     def __init__(self, data_path, label_path, frames=16, num_classes=226, train=True, transform=None, test_clips=5):
@@ -49,7 +49,7 @@ class Sign_Isolated(Dataset):
             self.labels.append(int(line[1]))
 
     def frame_indices_tranform(self, video_length, sample_duration):
-        """ 视频长度标准化
+        """ 视频转换帧，并长度标准化
 
         :param video_length: 视频帧长度
         :type video_length: int
@@ -108,14 +108,26 @@ class Sign_Isolated(Dataset):
         return i, j, i+output_size, j+output_size
 
     def read_images(self, folder_path, clip_no=0):
+        """读取一个视频的图？
+
+        :param folder_path: 文件
+        :type folder_path: _type_
+        :param clip_no: 视频编号, defaults to 0
+        :type clip_no: int, optional
+        :return: _description_
+        :rtype: _type_
+        """
         # assert len(os.listdir(folder_path)) >= self.frames, "Too few images in your data folder: " + str(folder_path)
         images = []
+
+        # 训练集
         if self.train:
-            # 训练集
+            # 这里数据是按照图像储存的
             index_list = self.frame_indices_tranform(len(os.listdir(folder_path)), self.frames)
-            flip_rand = random.random()
-            angle = (random.random() - 0.5) * 10
-            crop_box = self.random_crop_paras(256, 224)
+            flip_rand = random.random() # 翻转
+            angle = (random.random() - 0.5) * 10    # 角度
+            crop_box = self.random_crop_paras(256, 224) # 随机裁切
+        # 测试集不做增强
         else:
             index_list = self.frame_indices_tranform_test(len(os.listdir(folder_path)), self.frames, clip_no)
         
@@ -123,11 +135,13 @@ class Sign_Isolated(Dataset):
         for i in index_list:
             image = Image.open(os.path.join(folder_path, '{:04d}.jpg').format(i))
             if self.train:
+                # 翻转阈值
                 if flip_rand > 0.5:
                     image = ImageOps.mirror(image)
                 image = transforms.functional.rotate(image, angle)
                 image = image.crop(crop_box)
                 assert image.size[0] == 224
+            # 测试集固定数据
             else:
                 crop_box = (16, 16, 240, 240)
                 image = image.crop(crop_box)
@@ -150,12 +164,15 @@ class Sign_Isolated(Dataset):
         selected_folder = self.data_folder[idx]
         if self.train:
             images = self.read_images(selected_folder)
+
+        # 测试集从特定划分直接读取
         else:
             images = []
             for i in range(self.test_clips):
                 images.append(self.read_images(selected_folder, i))
             images = torch.stack(images, dim=0)
             # M, T, C, H, W
+
         label = torch.LongTensor([self.labels[idx]])
         # print(images.size(), ', ', label.size())
         return {'data': images, 'label': label}
