@@ -2,6 +2,27 @@ import torch
 from sklearn.metrics import accuracy_score
 
 def train_epoch(model, criterion, optimizer, dataloader, device, epoch, logger, log_interval, writer):
+    """训练
+
+    :param model: 模型
+    :type model: nn.model
+    :param criterion: 损失函数
+    :type criterion: _type_
+    :param optimizer: 优化器
+    :type optimizer: _type_
+    :param dataloader: 数据集
+    :type dataloader: _type_
+    :param device: _description_
+    :type device: _type_
+    :param epoch: _description_
+    :type epoch: _type_
+    :param logger: 日志
+    :type logger: _type_
+    :param log_interval: 输出log步长
+    :type log_interval: _type_
+    :param writer: _description_
+    :type writer: _type_
+    """
     model.train()
     losses = []
     all_label = []

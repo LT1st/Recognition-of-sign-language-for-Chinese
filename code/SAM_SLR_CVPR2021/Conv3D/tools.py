@@ -151,6 +151,7 @@ def plot_attention_map(model, dataloader, device):
 """
 Calculate Word Error Rate
 Word Error Rate = (Substitutions + Insertions + Deletions) / Number of Words Spoken
+替换+插入+删除 / 说出的单词数
 Reference:
 https://holianh.github.io/portfolio/Cach-tinh-WER/
 https://github.com/imalic3/python-word-error-rate
