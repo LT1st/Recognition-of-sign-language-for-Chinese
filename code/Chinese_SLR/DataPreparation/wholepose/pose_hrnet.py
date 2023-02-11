@@ -24,11 +24,14 @@ def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
                      padding=1, bias=False)
 
+
 class NoneBlock(nn.Module):
     def __init__(self):
         super(NoneBlock, self).__init__()
+
     def forward(self, x):
         return x
+
 
 class BinsBlock(nn.Module):
     expansion = 1
@@ -36,9 +39,10 @@ class BinsBlock(nn.Module):
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(BinsBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
-        self.conv1 = nn.Conv2d(inplanes, planes, 3, stride, 1, groups=planes, bias=False),
+        self.conv1 = nn.Conv2d(inplanes, planes, 3, stride,
+                               1, groups=planes, bias=False),
         self.bn1 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
-        
+
         self.conv2_1 = nn.Conv2d(planes, planes/8, 1, stride, 1, bias=False),
         self.conv2_2 = nn.Conv2d(planes/8, planes, 1, stride, 1, bias=False),
         self.bn2 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
@@ -52,11 +56,11 @@ class BinsBlock(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
 
-
         x2 = self.conv2_1(x)
         x2 = self.conv2_2(x2)
         x2 = self.bn2(x2)
-        x2 = F.normalize(x2.view(x2.size(0), x2.size(1), x2.size(2) * x2.size(3)), p=2, dim=2).view(x2.size(0), x2.size(1), x2.size(2), x2.size(3))
+        x2 = F.normalize(x2.view(x2.size(0), x2.size(1), x2.size(
+            2) * x2.size(3)), p=2, dim=2).view(x2.size(0), x2.size(1), x2.size(2), x2.size(3))
 
         x = x + x2
         x = self.relu(x)
@@ -504,6 +508,14 @@ class PoseHighResolutionNet(nn.Module):
         return x
 
     def init_weights(self, pretrained=''):
+        """初始化网络模型，如果指定了预训练模型，则可以通过加载该预训练模型的权重来初始化模型权重
+
+        Args:
+            pretrained (str, optional): 是否预训练. Defaults to ''.
+
+        Raises:
+            ValueError: _description_
+        """
         logger.info('=> init weights from normal distribution')
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -537,6 +549,15 @@ class PoseHighResolutionNet(nn.Module):
 
 
 def get_pose_net(cfg, is_train, **kwargs):
+    """获得姿态捕获的模型
+
+    Args:
+        cfg (_type_): _description_
+        is_train (bool): _description_
+
+    Returns:
+        _type_: _description_
+    """
     model = PoseHighResolutionNet(cfg, **kwargs)
 
     if is_train and cfg.MODEL.INIT_WEIGHTS:
