@@ -4,12 +4,13 @@ import torch.nn as nn
 from collections import OrderedDict
 import torch.nn.functional as F
 # groups == joints_number
+
 def channel_shuffle(x, groups):
     batchsize, num_channels, height, width = x.data.size()
 
     channels_per_group = num_channels // groups
     
-    # reshape
+    # reshape BCHW -> B G C H W
     x = x.view(batchsize, groups,
         channels_per_group, height, width)
 
@@ -92,6 +93,7 @@ class TemporalDownsampleBlock(nn.Module):
             batch_norm=True,
             relu=relu
             )
+
     def _make_grouped_conv1x1(self, in_channels, out_channels, groups, mid,
         batch_norm=True, relu=False):
 
@@ -184,35 +186,51 @@ class T_Pose_model(nn.Module):
         self.f6downsample = FrameDownsampleBlock(self.final_frames_number*joints_number,30*joints_number,1,10*10)
         self.dropout = nn.Dropout2d(0.333)
         self.fc1 = nn.Linear(990, n_classes)
+
     def forward(self, x):
         batchsize,num_channels, height, width = x.data.size()
         x = self.bn(x)
         x = self.swish(x)
         res = x
+        # 60 × 33 × 24 × 24 重塑为 60 × 792 × 24，并将它们提供给 1 × 1 卷积层
+        # 在此阶段只处理时间信息
+        # reshape -1自动调整  N C H W
         x = x.view(-1,self.in_channels,self.joints_number*height,width)
+        # 1x1conv做下采样
         x = self.t1downsample(x)
+        # 1x1conv做下采样，不relu
         x = self.t2downsample(x)
+        # reshape -1自动调整  N C H W
+        # 
         x = x.view(-1,self.final_frames_number*self.joints_number,height,width)
+        # resblock
         x = res + x
         x = self.swish(x)
         res = x
+
+        # 特征打乱并将它们分成60组，并利用分组的3×3卷积从不同帧的相同关键点特征中提取时间和空间信息
         x = channel_shuffle(x,self.final_frames_number)
         x = self.f1downsample(x)
         x = self.dropout(x)
         x = self.f2downsample(x)
+        # 第三阶段，特征再次洗牌，分成33组。
         x = channel_shuffle(x,self.joints_number)
         x = x + res
         x = self.swish(x)
         res = x
+
+        # 仍然使用分组的 3×3 卷积，但只提取每帧中的空间信息
         x = self.f3downsample(x)
         x = self.dropout(x)
         x = self.f4downsample(x)
         x = x + res
         x = self.swish(x)
 
+        #  3×3 的全连接层来生成预测特征。
         x = self.f5downsample(x)
         x = self.dropout(x)
         x = self.f6downsample(x)
+
         x = F.avg_pool2d(x, x.data.size()[-2:])
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
@@ -242,6 +260,11 @@ class T_Pose_model(nn.Module):
                 m.bias.data.zero_()
 
 class LabelSmoothingCrossEntropy(nn.Module):
+    """标签平滑
+
+    :param nn: _description_
+    :type nn: _type_
+    """
     def __init__(self):
         super(LabelSmoothingCrossEntropy, self).__init__()
     def forward(self, x, target, smoothing=0.1):
