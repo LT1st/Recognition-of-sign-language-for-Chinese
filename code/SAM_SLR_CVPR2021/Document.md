@@ -1,3 +1,5 @@
+项目文件结构如下：
+```
 ├─Conv3D
 │  │  dataset_sign_clip.py                              数据集读取、划分
 │  │  dataset_sign_flow_clip.py                         光流数据集读取、划分
@@ -16,9 +18,9 @@
 │  │  Sign_Isolated_Conv3D_hha_clip_mask_finetune.py
 │  │  Sign_Isolated_Conv3D_hha_clip_mask_test.py
 │  │  tools.py
-│  │  train.py
+│  │  train.py                                          训练
 │  │  utils.py
-│  │  validation_clip.py
+│  │  validation_clip.py                                验证
 │  │
 │  ├─data
 │  │      test_labels_pseudo.csv
@@ -31,8 +33,8 @@
 │
 ├─data-prepare  预处理各类输入
 │  │  .gitattributes
-│  │  gen_flow.py
-│  │  gen_frames.py
+│  │  gen_flow.py                               生成RGB、Depth数据流，需要修改folder, npy_folder, out_folder文件路径
+│  │  gen_frames.py                             从视频获取RGB帧，需要修改folder, npy_folder, out_folder
 │  │  gen_hha.py
 │  │  optical_flow_guidelines.docx
 │  │  README.MD
@@ -364,8 +366,8 @@
 │  │              roidb_from_nyud2.m
 │  │              script_data.m
 │  │
-│  └─wholepose
-│      │  demo.py
+│  └─wholepose                              产生全身关键点，需要修改input_path and output_npy 
+│      │  demo.py                           产生全身关键点
 │      │  download_pretrained.txt
 │      │  pose_hrnet.py
 │      │  readme.md
@@ -489,9 +491,11 @@
         │  download_pretrained_model.txt
         │  pose_hrnet.py
         │  wholebody_w48_384x384_adam_lr1e-3.yaml
-        │  wholepose_features_extraction.py
+        │  wholepose_features_extraction.py                提取骨架信息
         │
         └─config
                 default.py
                 models.py
                 __init__.py
+
+```
