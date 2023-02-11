@@ -2,6 +2,7 @@ import os
 import numpy as np
 from numpy.lib.format import open_memmap
 
+# 不同时间来计算动作
 sets = {
     'train', 'val', 'test'
 
@@ -29,5 +30,5 @@ for dataset in datasets:
                 mode='w+',
                 shape=(N, C, T, V, M))
             for t in tqdm(range(T - 1)):
-                fp_sp[:, :, t, :, :] = data[:, :, t + 1, :, :] - data[:, :, t, :, :]
+                fp_sp[:, :, t, :, :] = data[:, :, t + 1, :, :] - data[:, :, t, :, :] # 前一个帧减去下一个帧，得到动作
             fp_sp[:, :, T - 1, :, :] = 0

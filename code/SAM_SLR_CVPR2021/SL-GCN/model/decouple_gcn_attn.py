@@ -10,8 +10,8 @@ from model.dropT import DropBlockT_1d
 
 def import_class(name):
     components = name.split('.')
-    mod = __import__(components[0])
-    for comp in components[1:]:
+    mod = __import__(components[0]) # 动态导入
+    for comp in components[1:]: # 更加细致的方法
         mod = getattr(mod, comp)
     return mod
 
@@ -41,7 +41,6 @@ class unit_tcn(nn.Module):
         pad = int((kernel_size - 1) / 2)
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=(kernel_size, 1), padding=(pad, 0),
                               stride=(stride, 1))
-
         self.bn = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU()
         conv_init(self.conv)
@@ -55,7 +54,7 @@ class unit_tcn(nn.Module):
         x = self.dropT(self.dropS(x, keep_prob, A), keep_prob)
         return x
 
-
+# 跳过Drop
 class unit_tcn_skip(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=9, stride=1):
         super(unit_tcn_skip, self).__init__()
@@ -167,11 +166,11 @@ class TCN_GCN_unit(nn.Module):
             self.residual = lambda x: x
 
         else:
-            self.residual = unit_tcn_skip(
-                in_channels, out_channels, kernel_size=1, stride=stride)
+            self.residual = unit_tcn_skip(in_channels, out_channels, kernel_size=1, stride=stride)
         self.dropSke = DropBlock_Ske(num_point=num_point)
         self.dropT_skip = DropBlockT_1d(block_size=block_size)
         self.attention = attention
+        # 注意力机制 STC
         if attention:
             print('Attention Enabled!')
             self.sigmoid = nn.Sigmoid()
@@ -195,7 +194,9 @@ class TCN_GCN_unit(nn.Module):
             nn.init.constant_(self.fc2c.bias, 0)
 
     def forward(self, x, keep_prob):
+        # GCN（SCN+BN+RELU）
         y = self.gcn1(x)
+        # STC
         if self.attention:
             # spatial attention
             se = y.mean(-2)  # N C V
@@ -215,36 +216,33 @@ class TCN_GCN_unit(nn.Module):
             se2 = self.sigmoid(self.fc2c(se1))
             y = y * se2.unsqueeze(-1).unsqueeze(-1) + y
             # a3 = se2.unsqueeze(-1).unsqueeze(-1)
-            
+         # TCN+BN
         y = self.tcn1(y, keep_prob, self.A)
+        # Drop Graph
         x_skip = self.dropT_skip(self.dropSke(self.residual(x), keep_prob, self.A), keep_prob)
+        # 最后做一个RELU
         return self.relu(y + x_skip)
 
-
+# Sl-GCN
 class Model(nn.Module):
     def __init__(self, num_class=60, num_point=25, num_person=2, groups=8, block_size=41, graph=None, graph_args=dict(), in_channels=3):
         super(Model, self).__init__()
-
         if graph is None:
             raise ValueError()
         else:
             Graph = import_class(graph)
             self.graph = Graph(**graph_args)
-
         A = self.graph.A
-        self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point)
-
-        self.l1 = TCN_GCN_unit(in_channels, 64, A, groups, num_point,
-                               block_size, residual=False)
+        self.data_bn = nn.BatchNorm1d(num_person * in_channels * num_point) # 保持分布不变 BN
+        # 需要10个block
+        self.l1 = TCN_GCN_unit(in_channels, 64, A, groups, num_point,block_size, residual=False)
         self.l2 = TCN_GCN_unit(64, 64, A, groups, num_point, block_size)
         self.l3 = TCN_GCN_unit(64, 64, A, groups, num_point, block_size)
         self.l4 = TCN_GCN_unit(64, 64, A, groups, num_point, block_size)
-        self.l5 = TCN_GCN_unit(
-            64, 128, A, groups, num_point, block_size, stride=2)
+        self.l5 = TCN_GCN_unit(64, 128, A, groups, num_point, block_size, stride=2)
         self.l6 = TCN_GCN_unit(128, 128, A, groups, num_point, block_size)
         self.l7 = TCN_GCN_unit(128, 128, A, groups, num_point, block_size)
-        self.l8 = TCN_GCN_unit(128, 256, A, groups,
-                               num_point, block_size, stride=2)
+        self.l8 = TCN_GCN_unit(128, 256, A, groups,num_point, block_size, stride=2)
         self.l9 = TCN_GCN_unit(256, 256, A, groups, num_point, block_size)
         self.l10 = TCN_GCN_unit(256, 256, A, groups, num_point, block_size)
 
@@ -280,4 +278,4 @@ class Model(nn.Module):
         x = x.reshape(N, M, c_new, -1)
         x = x.mean(3).mean(1)
 
-        return self.fc(x)
+        return self.fc(x) # 全连接

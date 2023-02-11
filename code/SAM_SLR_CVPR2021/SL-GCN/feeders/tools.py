@@ -3,6 +3,7 @@ import random
 import numpy as np
 
 
+# 输出随机数
 def downsample(data_numpy, step, random_sample=True):
     # input: C,T,V,M
     begin = np.random.randint(step) if random_sample else 0

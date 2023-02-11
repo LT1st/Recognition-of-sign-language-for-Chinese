@@ -32,5 +32,5 @@ class DropBlock_Ske(nn.Module):
         M = torch.matmul(M_seed, A)
         M[M > 0.001] = 1.0
         M[M < 0.5] = 0.0
-        mask = (1 - M).view(n, 1, 1, self.num_point)
+        mask = (1 - M).view(n, 1, 1, self.num_point) # view 是reshape array
         return input * mask * mask.numel() / mask.sum()

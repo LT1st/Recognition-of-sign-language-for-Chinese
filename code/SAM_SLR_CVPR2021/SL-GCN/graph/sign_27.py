@@ -3,6 +3,7 @@ import sys
 sys.path.extend(['../'])
 from graph import tools
 
+# 计算骨架的矩阵
 num_node = 27
 self_link = [(i, i) for i in range(num_node)]
 inward_ori_index = [(5, 6), (5, 7),
@@ -13,9 +14,9 @@ inward_ori_index = [(5, 6), (5, 7),
                     (24,25),(26,27),(28,29),(30,31),
                     (10,12),(11,22)]
 
-inward = [(i - 5, j - 5) for (i, j) in inward_ori_index]
-outward = [(j, i) for (i, j) in inward]
-neighbor = inward + outward
+inward = [(i - 5, j - 5) for (i, j) in inward_ori_index] # 0到22
+outward = [(j, i) for (i, j) in inward] # 调转了i 和 j
+neighbor = inward + outward # ？
 
 
 class Graph:
@@ -27,6 +28,8 @@ class Graph:
         self.outward = outward
         self.neighbor = neighbor
 
+
+    # 返回一个矩阵
     def get_adjacency_matrix(self, labeling_mode=None):
         if labeling_mode is None:
             return self.A

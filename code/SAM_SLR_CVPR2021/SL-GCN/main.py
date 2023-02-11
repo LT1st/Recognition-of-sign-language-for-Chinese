@@ -32,6 +32,7 @@ import torch.nn.functional as F
 #         loss = confidence * nll_loss + smoothing * smooth_loss
 #         return loss.mean()
 
+# 随机种子
 def init_seed(_):
     torch.cuda.manual_seed_all(1)
     torch.manual_seed(1)
@@ -41,7 +42,7 @@ def init_seed(_):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-
+# 参数
 def get_parser():
     # parameter priority: command line > config > default
     parser = argparse.ArgumentParser(
@@ -283,6 +284,7 @@ class Processor():
                     output_device=output_device)
 
     def load_optimizer(self):
+        # 梯度下降函数
         if self.arg.optimizer == 'SGD':
 
             params_dict = dict(self.model.named_parameters())

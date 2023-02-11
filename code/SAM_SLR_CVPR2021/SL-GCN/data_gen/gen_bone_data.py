@@ -2,6 +2,7 @@ import os
 import numpy as np
 from numpy.lib.format import open_memmap
 
+# 骨架的做标，一共是27个，不同的组合，代表不同的骨头
 paris = {
     'ntu/xview': (
         (1, 2), (2, 21), (3, 21), (4, 3), (5, 21), (6, 5), (7, 6), (8, 7), (9, 21), (10, 9), (11, 10), (12, 11),
@@ -58,7 +59,7 @@ from tqdm import tqdm
 for dataset in datasets:
     for set in sets:
         print(dataset, set)
-        data = np.load('../data/{}/{}_data_joint.npy'.format(dataset, set))
+        data = np.load('../data/{}/{}_data_joint.npy'.format(dataset, set)) # 缺少data_joint.npy
         N, C, T, V, M = data.shape
         fp_sp = open_memmap(
             '../data/{}/{}_data_bone.npy'.format(dataset, set),
@@ -70,5 +71,5 @@ for dataset in datasets:
         for v1, v2 in tqdm(paris[dataset]):
             v1 -= 5
             v2 -= 5
-            fp_sp[:, :, :, v2, :] = data[:, :, :, v2, :] - data[:, :, :, v1, :]
+            fp_sp[:, :, :, v2, :] = data[:, :, :, v2, :] - data[:, :, :, v1, :] # 关节点减去关节点就是骨头了
             # fp_sp[:, :, :, v1, :] = data[:, :, :, v1, :] - data[:, :, :, v2, :]

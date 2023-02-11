@@ -14,7 +14,7 @@ class DropBlockT_1d(nn.Module):
             return input
         n,c,t,v = input.size()
 
-        input_abs = torch.mean(torch.mean(torch.abs(input),dim=3),dim=1).detach()
+        input_abs = torch.mean(torch.mean(torch.abs(input),dim=3),dim=1).detach() # 计算以及取消梯度
         input_abs = (input_abs/torch.sum(input_abs)*input_abs.numel()).view(n,1,t)
         gamma = (1. - self.keep_prob) / self.block_size
         input1 = input.permute(0,1,3,2).contiguous().view(n,c*v,t)
