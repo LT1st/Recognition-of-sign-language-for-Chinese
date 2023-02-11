@@ -37,7 +37,10 @@ if __name__ == "__main__":
     #cls_criterion = nn.CrossEntropyLoss().to(device)
     cls_criterion = LabelSmoothingCrossEntropy().cuda()
     # Define network
-    model =T_Pose_model(frames_number=60,joints_number=33,
+    # 每个视频的 60 帧中提取 33 个关键点的特征作为我们模型的输入
+    # 鼻子上的 1 个关键点、嘴巴上的 4 个关键点、肩膀上的 2 个关键点、
+    # 肘部上的 2 个关键点、手腕上的 2 个关键点和 22 个关键点在手
+    model =T_Pose_model(frames_number=60, joints_number=33, 
         n_classes=226
     )
 
@@ -88,6 +91,7 @@ if __name__ == "__main__":
         model.train()
         print("")
         return newacc
+
     global_acc = 0
     needsave = False
     for epoch in range(opt.num_epochs):

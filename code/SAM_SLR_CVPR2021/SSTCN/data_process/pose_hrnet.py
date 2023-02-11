@@ -2,6 +2,8 @@
 # Copyright (c) Microsoft
 # Licensed under the MIT License.
 # Written by Bin Xiao (Bin.Xiao@microsoft.com)
+# 鼻子上的 1 个关键点、嘴巴上的 4 个关键点、肩膀上的 2 个关键点、肘部上的 2 个关键点、
+# 手腕上的 2 个关键点和 22 个关键点在手上。
 # ------------------------------------------------------------------------------
 
 from __future__ import absolute_import
