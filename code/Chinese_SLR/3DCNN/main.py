@@ -39,7 +39,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Hyperparams
 num_classes = 226  # 最终的分类目标数
-start_model = 1
+start_model = 3
 epochs = 1  # 训练轮数
 batch_size = 6
 learning_rate = 0.003  # 0.003-0.001 Train 0.0004-0.0001 Finetune

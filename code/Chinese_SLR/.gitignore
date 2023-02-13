@@ -3,8 +3,6 @@ Dataset/test/*
 
 pytorch/*
 
-
-
 *.pyc
 *.pth
 *.mp4
