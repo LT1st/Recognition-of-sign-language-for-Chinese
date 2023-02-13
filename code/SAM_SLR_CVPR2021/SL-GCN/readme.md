@@ -1,4 +1,6 @@
 # Skeleton Based Sign Language Recognition
+先运行data_gen；数据是/data/sign/里面的（来自于数据预处理）
+再运行main
 ## Data preparation
 1. Extract whole-body keypoints data following the instruction in ../data_process/wholepose
 2. Run the following code to prepare the data for GCN.

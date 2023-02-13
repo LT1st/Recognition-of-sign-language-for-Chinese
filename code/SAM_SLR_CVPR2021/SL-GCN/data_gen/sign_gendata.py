@@ -4,7 +4,8 @@ from tqdm import tqdm
 import sys
 import numpy as np
 import os
-
+# 输入是data/sign/train or test or val 里面的数据
+# 输出是_color.mp4.npy；_label.pkl；_data_joint.npy；
 sys.path.extend(['../'])
 # 对视频流取150帧
 # 选择关节点
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Sign Data Converter.') # argparse是一个Python模块：命令行选项、参数和子命令解析器。
     parser.add_argument('--data_path', default='/data/sign/test_npy/npy') #'train_npy/npy', 'va_npy/npy'
     parser.add_argument('--label_path', default='../data/sign/27/train_labels.csv') # 'train_labels.csv', 'val_gt.csv', 'test_labels.csv'
-    parser.add_argument('--out_folder', default='../data/sign/')
+    parser.add_argument('--out_folder', default='../data/sign/27_2') # 原来是../data/sign/
     parser.add_argument('--points', default='27')
 
     part = 'test' # 'train', 'val'

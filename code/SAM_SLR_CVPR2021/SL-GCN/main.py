@@ -552,7 +552,6 @@ class Processor():
                       loader_name=['test'], wrong_file=wf, result_file=rf)
             self.print_log('Done.\n')
 
-
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True

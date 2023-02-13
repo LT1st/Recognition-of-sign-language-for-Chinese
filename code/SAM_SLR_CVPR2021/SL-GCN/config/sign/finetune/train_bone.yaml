@@ -1,5 +1,5 @@
 Experiment_name: bone_27_2_finetune
-
+# 主要是不同的权重，在最后面。
 # feeder
 feeder: feeders.feeder.Feeder
 train_feeder_args:
