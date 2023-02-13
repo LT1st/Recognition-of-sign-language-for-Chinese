@@ -57,4 +57,4 @@ def main(inputPath: str, outputPath: str):
 
 
 if __name__ == "__main__":
-    main("../../Dataset/rawData/train/", "../../Dataset/frames/")
+    main("../../Dataset/train/", "./SelfData/")

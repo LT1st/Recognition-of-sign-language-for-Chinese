@@ -4,6 +4,7 @@ import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 import random
+import math
 import numpy as np
 
 """
@@ -35,20 +36,22 @@ class Sign_Isolated(Dataset):
 
     def frame_indices_tranform(self, video_length, sample_duration):
         """
-        如果视频长度大于采样时长，则随机选择一个起始点，并生成从随机起始点到随机起始点加采样时长的帧索引。
+        如果视频长度大于采样时长，则随机选择一个合适的起始点，并生成从随机起始点到结束的等分数据段
         如果视频长度不大于采样时长，则生成整个视频的帧索引，并将其循环直到达到采样时长。
         返回一个shape为(sample_duration,)的帧索引数组。
         """
         if video_length > sample_duration:
-            random_start = random.randint(0, video_length - sample_duration)
+            index_len = math.floor(video_length/sample_duration)  # 获得间隔长度
+            random_start = random.randint(      # 选择随机起始点
+                0, video_length - sample_duration*index_len)
             frame_indices = np.arange(
-                random_start, random_start + sample_duration) + 1
+                random_start, random_start + sample_duration*index_len, index_len)
         else:
             frame_indices = np.arange(video_length)
             while frame_indices.shape[0] < sample_duration:
                 frame_indices = np.concatenate(
                     (frame_indices, np.arange(video_length)), axis=0)
-            frame_indices = frame_indices[:sample_duration] + 1
+            frame_indices = frame_indices[:sample_duration]
         assert frame_indices.shape[0] == sample_duration
         return frame_indices
 
@@ -56,15 +59,15 @@ class Sign_Isolated(Dataset):
         if video_length > sample_duration:
             start = (video_length -
                      sample_duration) // (self.test_clips - 1) * clip_no
-            frame_indices = np.arange(start, start + sample_duration) + 1
+            frame_indices = np.arange(start, start + sample_duration)
         elif video_length == sample_duration:
-            frame_indices = np.arange(sample_duration) + 1
+            frame_indices = np.arange(sample_duration)
         else:
             frame_indices = np.arange(video_length)
             while frame_indices.shape[0] < sample_duration:
                 frame_indices = np.concatenate(
                     (frame_indices, np.arange(video_length)), axis=0)
-            frame_indices = frame_indices[:sample_duration] + 1
+            frame_indices = frame_indices[:sample_duration]
 
         return frame_indices
 
@@ -95,7 +98,7 @@ class Sign_Isolated(Dataset):
         # for i in range(self.frames):
         for i in index_list:
             image = Image.open(os.path.join(
-                folder_path, '{:d}.jpg').format(i-1))
+                folder_path, '{:d}.jpg').format(i))
             if self.train:
                 # if flip_rand > 0.5:
                 #     image = ImageOps.mirror(image)

@@ -30,8 +30,8 @@ class LabelSmoothingCrossEntropy(nn.Module):
 
 
 # Path setting
-data_path = "../../Dataset/frames/"  # 训练路径
-label_train_path = "../../Dataset/rawData/train.csv"  # 训练的标签
+data_path = "./DataPreper/SelfData/"  # 训练路径
+label_train_path = "../Dataset/train.csv"  # 训练的标签
 
 # writer = SummaryWriter(sum_path)        # 使用了tensorboard
 
@@ -39,20 +39,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Hyperparams
 num_classes = 226  # 最终的分类目标数
-epochs = 16  # 训练轮数
-batch_size = 4
-learning_rate = 1e-3  # 1e-3 Train 1e-4 Finetune
+epochs = 1  # 训练轮数
+batch_size = 6
+learning_rate = 0.003  # 1e-3 Train 1e-4 Finetune
 weight_decay = 1e-4  # 1e-4
-log_interval = 4   # 注册间隔
-sample_size = 64
-sample_duration = 24
+log_interval = 50   # 注册间隔
+sample_size = 96
+sample_duration = 16
 attention = False
 drop_p = 0.0
-
-
-def get_lr(optimizer):
-    for param_group in optimizer.param_groups:
-        return param_group['lr']
 
 
 def main():
@@ -85,7 +80,7 @@ def main():
 
     model = model.to(device)
 
-    criterion = LabelSmoothingCrossEntropy()
+    loss_fn = LabelSmoothingCrossEntropy()
     optimizer = optim.SGD(  # 显存不足,被迫改优化器
         model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -93,13 +88,14 @@ def main():
 
     # Start training
     for epoch in range(epochs):
-        print('lr: ', get_lr(optimizer))
-        train_epoch(model, criterion, optimizer, train_loader,
+        train_epoch(model, loss_fn, optimizer, train_loader,
                     device, epoch, log_interval, None)
 
-    dataiter = iter(train_loader)
-    images = next(dataiter)['data']
-    images = images.to(device)
+    torch.save(model.state_dict, "./models/3dcnn_0.pth")
+
+    # dataiter = iter(train_loader)
+    # images = next(dataiter)['data']
+    # images = images.to(device)
 
 
 # Train with 3DCNN
