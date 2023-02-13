@@ -1,13 +1,9 @@
-Dataset/rawData/train/*
-Dataset/rawData/test/*
-Dataset/wholepose/*
-Dataset/frames/*
-Dataset/features/*
-
-Models/*
+Dataset/train/*
+Dataset/test/*
 
 pytorch/*
 
 
 *.pyc
 *.pth
+*.
