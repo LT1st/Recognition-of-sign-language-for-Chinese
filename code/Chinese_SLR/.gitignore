@@ -10,3 +10,4 @@ pytorch/*
 
 
 *.pyc
+*.pth
