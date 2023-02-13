@@ -39,15 +39,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Hyperparams
 num_classes = 226  # 最终的分类目标数
+start_model = 1
 epochs = 1  # 训练轮数
 batch_size = 6
-learning_rate = 0.003  # 1e-3 Train 1e-4 Finetune
+learning_rate = 0.003  # 0.003-0.001 Train 0.0004-0.0001 Finetune
 weight_decay = 1e-4  # 1e-4
 log_interval = 50   # 注册间隔
 sample_size = 96
 sample_duration = 16
 attention = False
-drop_p = 0.0
 
 
 def main():
@@ -64,16 +64,18 @@ def main():
 
     # 这里载入的模型虽然也是预训练，但是是在其他通用数据集上完成的
     model = r2plus1d_18(pretrained=True, num_classes=num_classes)
+
     # 载入训练模型，这里的训练模型来源于暂停训练后保留的模型
-    # checkpoint = torch.load('models/slr_resnet2d+1.pth')
+    modelName = f"./models/3dcnn_{start_model}.pth"
+    print(f"载入模型: {modelName}")
+    checkpoint = torch.load(modelName)
+    model.load_state_dict(checkpoint)  # 重新载入含有训练权重的模型
     # new_state_dict = OrderedDict()
 
     # for k, v in checkpoint.items():
     #     print(k[7:])
     #     name = k[7:]  # 对于训练的模型，我们只要权重部分(模型结构部分不要)
     #     new_state_dict[name] = v
-
-    # model.load_state_dict(new_state_dict)  # 重新载入含有训练权重的模型
 
     # # 这一段代码不明所以，fc层早就被替换过了，而且num_classes=226为什么不在上面构造函数的时候指定呢?
     # model.fc1 = nn.Linear(model.fc1.in_features, num_classes)
@@ -87,11 +89,11 @@ def main():
     #     optimizer, mode='min', factor=0.1, patience=10, threshold=0.0001)
 
     # Start training
-    for epoch in range(epochs):
+    for epoch in range(start_model, start_model+epochs):
         train_epoch(model, loss_fn, optimizer, train_loader,
                     device, epoch, log_interval, None)
 
-    torch.save(model.state_dict, "./models/3dcnn_0.pth")
+        torch.save(model.state_dict(), f"./models/3dcnn_{epoch+1}.pth")
 
     # dataiter = iter(train_loader)
     # images = next(dataiter)['data']

@@ -37,7 +37,7 @@ def train_epoch(model, loss_fn, optimizer, dataloader, device, epoch, log_interv
 
         if (batch_idx + 1) % log_interval == 0:
             print("epoch {:3d} | iteration {:5d} | Loss {:.6f} | Acc {:.2f}%".format(
-                epoch+1, batch_idx+1, loss.item(), (score/log_interval)*100))
+                epoch, batch_idx+1, loss.item(), (score/log_interval)*100))
             score = 0
 
     # Compute the average loss & accuracy
