@@ -17,14 +17,16 @@ class SignDataset(Dataset):
         self.train = train
         self.transform = transform
 
+        self.folderDataSzie = 240 if train else 10
+
     def __len__(self):
-        return self.numClasses * 250
+        return self.numClasses * self.folderDataSzie
 
     def __getitem__(self, index):
-        label = math.floor(index/250)  # 获得标签
+        label = math.floor(index/self.folderDataSzie)  # 获得标签
         labelFolder = os.path.join(self.dataPath, str(label))
         imagesFolder = os.path.join(
-            labelFolder, os.listdir(labelFolder)[index-label*250])
+            labelFolder, os.listdir(labelFolder)[index-label*self.folderDataSzie])
 
         images = self.getImages(imagesFolder)   # 获得图像
         return {'data': images, 'label': torch.LongTensor(label)}  # 返回图像和标签

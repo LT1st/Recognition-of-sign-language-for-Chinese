@@ -19,8 +19,11 @@ class r2plus1d_18(nn.Module):   # 3D CNN 模型，通过对标准库模型进行
         self.pretrained = pretrained
         self.num_classes = num_classes
 
-        model = torchvision.models.video.r2plus1d_18(
-            pretrained=self.pretrained)         # 从标准库取得模型
+        if (self.pretrained):
+            model = torchvision.models.video.r2plus1d_18(
+                pretrained=self.pretrained)         # 从标准库取得模型
+        else:
+            model = torchvision.models.video.r2plus1d_18()
 
         # 魔改模型，去掉fc层
         modules = list(model.children())[:-1]
