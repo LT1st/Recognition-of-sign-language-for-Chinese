@@ -32,17 +32,17 @@ import os
 # folder = './data/Validation/val'  # 'train', 'test'
 # npy_folder = './data/npy3'  # 'train_npy/npy3', 'test_npy/npy3'
 # out_folder = './data/frames'  # 'train_frames' 'test_frames'
+def checkDir(dirName: str):
+    if not os.path.isdir(dirName):
+        os.mkdir(dirName)
 
 
-def main(inputPath: str, outputPath: str):
+def video2images(inputPath: str, outputPath: str, interval=1):
     for videoName in tqdm(os.listdir(inputPath)):
         videoPath = inputPath + videoName
         name, _ = videoName.split('.')
         savePath = outputPath + name + "/"
-        try:
-            os.mkdir(savePath)
-        except:
-            pass
+        checkDir(savePath)
 
         index = 0
         cap = cv2.VideoCapture(videoPath)
@@ -57,4 +57,7 @@ def main(inputPath: str, outputPath: str):
 
 
 if __name__ == "__main__":
-    main("../../Dataset/train/", "./SelfData/")
+    checkDir("SelfTrain")
+    checkDir("SelfTest")
+    video2images("../../Dataset/train/", "./SelfTrain/")
+    video2images("../../Dataset/test/", "./SelfTest/")

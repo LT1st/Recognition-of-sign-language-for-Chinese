@@ -71,44 +71,26 @@ class Sign_Isolated(Dataset):
 
         return frame_indices
 
-    def random_crop_paras(self, input_size, output_size):
-        # 生成随机裁剪参数
-        diff = input_size - output_size
-        i = random.randint(0, diff)
-        j = random.randint(0, diff)
-        return i, j, i+output_size, j+output_size
-
     def read_images(self, folder_path, clip_no=0):
         """
         从文件夹内获取三维的图像序列，如果在训练模式下，还会对数据集进行扩充
         PS: 翻转镜像等功能不会造成手语识别变得更加迷惑吗，或许有的手语语义是存在左右关系的,也许这一部分代码功能应该被去除
         """
-        # assert len(os.listdir(folder_path)) >= self.frames, "Too few images in your data folder: " + str(folder_path)
         images = []
         if self.train:
             index_list = self.frame_indices_tranform(   # 获取视频帧序列
                 len(os.listdir(folder_path)), self.frames)
             flip_rand = random.random()                 # 生成随机数判断是否要翻转以扩充数据集
             angle = (random.random() - 0.5) * 10        # 旋转扩充数据集
-            crop_box = self.random_crop_paras(256, 224)
         else:
             index_list = self.frame_indices_tranform_test(
                 len(os.listdir(folder_path)), self.frames, clip_no)
 
-        # for i in range(self.frames):
         for i in index_list:
             image = Image.open(os.path.join(
                 folder_path, '{:d}.jpg').format(i))
             if self.train:
-                # if flip_rand > 0.5:
-                #     image = ImageOps.mirror(image)
                 image = transforms.functional.rotate(image, angle)
-                image = image.crop(crop_box)
-                assert image.size[0] == 224
-            else:
-                crop_box = (16, 16, 240, 240)
-                image = image.crop(crop_box)
-                # assert image.size[0] == 224
             if self.transform is not None:
                 image = self.transform(image)
 
@@ -125,14 +107,7 @@ class Sign_Isolated(Dataset):
 
     def __getitem__(self, idx):
         selected_folder = self.data_folder[idx]  # 获取数据目录
-        if self.train:
-            images = self.read_images(selected_folder)  # 这个函数获取三维的图片序列数据
-        else:
-            images = []
-            for i in range(self.test_clips):
-                images.append(self.read_images(selected_folder, i))
-            images = torch.stack(images, dim=0)
-            # M, T, C, H, W
+        images = self.read_images(selected_folder)  # 这个函数获取三维的图片序列数据
         label = torch.LongTensor([self.labels[idx]])
         # print(images.size(), ', ', label.size())
         return {'data': images, 'label': label}  # 返回图像和标签
