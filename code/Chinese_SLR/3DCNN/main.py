@@ -30,10 +30,8 @@ class LabelSmoothingCrossEntropy(nn.Module):
 
 
 # Path setting
-data_path = "./DataPreper/SelfTrain/"  # 训练路径
-test_path = "./DataPreper/SelfTest/"
-label_train_path = "../Dataset/train.csv"  # 训练的标签
-label_test_path = "../Dataset/test.csv"  # 训练的标签
+data_path = "./DataPreper/Train/"  # 训练路径
+test_path = "./DataPreper/Test/"
 # writer = SummaryWriter(sum_path)        # 使用了tensorboard
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
