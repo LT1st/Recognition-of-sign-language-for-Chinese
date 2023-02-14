@@ -9,27 +9,25 @@ import numpy as np
 
 
 class SignDataset(Dataset):
-    def __init__(self, dataPath,  frames=16, numClasses=500, train=True, transform=None) -> None:
+    def __init__(self, dataPath,  frames=16, dataSize=240, train=True, transform=None) -> None:
         super(SignDataset).__init__()
         self.dataPath = dataPath
         self.frames = frames
-        self.numClasses = numClasses
         self.train = train
         self.transform = transform
-
-        self.folderDataSzie = 240 if train else 10
+        self.folderDataSzie = dataSize
 
     def __len__(self):
-        return self.numClasses * self.folderDataSzie
+        return 500 * self.folderDataSzie
 
     def __getitem__(self, index):
         label = math.floor(index/self.folderDataSzie)  # 获得标签
-        labelFolder = os.path.join(self.dataPath, str(label))
+        labelFolder = os.path.join(self.dataPath, "{:03d}".format(label))
         imagesFolder = os.path.join(
             labelFolder, os.listdir(labelFolder)[index-label*self.folderDataSzie])
 
         images = self.getImages(imagesFolder)   # 获得图像
-        return {'data': images, 'label': torch.LongTensor(label)}  # 返回图像和标签
+        return {'data': images, 'label': torch.LongTensor([label])}  # 返回图像和标签
 
     def getImages(self, dir: str):
         """
