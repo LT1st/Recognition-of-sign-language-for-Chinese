@@ -29,7 +29,6 @@ def train_epoch(model, loss_fn, optimizer, dataloader, device, epoch, log_interv
 
         score += accuracy_score(labels.squeeze().cpu().data.squeeze(
         ).numpy(), prediction.cpu().data.squeeze().numpy())
-
         # backward & optimize
         loss.backward()
         optimizer.step()

@@ -59,5 +59,5 @@ def video2images(inputPath: str, outputPath: str, interval=1):
 if __name__ == "__main__":
     checkDir("SelfTrain")
     checkDir("SelfTest")
-    video2images("../../Dataset/train/", "./SelfTrain/")
+    # video2images("../../Dataset/train/", "./SelfTrain/")
     video2images("../../Dataset/test/", "./SelfTest/")

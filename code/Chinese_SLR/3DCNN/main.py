@@ -41,17 +41,17 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Hyperparams
 num_classes = 226  # 最终的分类目标数
 start_model = 3
-epochs = 1  # 训练轮数
-batch_size = 4
+epochs = 4  # 训练轮数
+batch_size = 6
 learning_rate = 0.002  # 0.003-0.001 Train 0.0004-0.0001 Finetune
 weight_decay = 1e-4  # 1e-4
-log_interval = 50   # 注册间隔
+log_interval = 100   # 注册间隔
 sample_size = 96
 sample_duration = 16
 attention = False
 
 
-def main():
+def train():
     # 数据相关
     transform = transforms.Compose([transforms.Resize([sample_size, sample_size]),
                                     transforms.ToTensor(),
@@ -59,13 +59,8 @@ def main():
     train_set = Sign_Isolated(data_path=data_path, label_path=label_train_path, frames=sample_duration,
                               num_classes=num_classes, train=True, transform=transform)
 
-    test_set = Sign_Isolated(data_path=test_path, label_path=label_test_path, frames=sample_duration,
-                             num_classes=num_classes, train=False, transform=transform)
-
     train_loader = DataLoader(
         train_set, batch_size=batch_size, shuffle=True, num_workers=12, pin_memory=True)
-    test_loader = DataLoader(
-        test_set, batch_size=batch_size, shuffle=False, num_workers=12, pin_memory=True)
     # 模型相关
 
     # 这里载入的模型虽然也是预训练，但是是在其他通用数据集上完成的
@@ -87,11 +82,35 @@ def main():
     for epoch in range(start_model, start_model+epochs):
         train_epoch(model, loss_fn, optimizer, train_loader,
                     device, epoch, log_interval, None)
-        print("开始测试")
-        test_epoch(model, test_loader, device, None)
         torch.save(model.state_dict(), f"./models/3dcnn_{epoch+1}.pth")
+
+
+def test(startIndex, endIndex):
+    # 数据相关
+    transform = transforms.Compose([transforms.Resize([sample_size, sample_size]),
+                                    transforms.ToTensor(),
+                                    transforms.Normalize(mean=[0.5], std=[0.5])])
+
+    test_set = Sign_Isolated(data_path=test_path, label_path=label_test_path, frames=sample_duration,
+                             num_classes=num_classes, train=False, transform=transform)
+
+    test_loader = DataLoader(
+        test_set, batch_size=2, shuffle=False, num_workers=12, pin_memory=True)
+    # 模型相关
+
+    # 这里载入的模型虽然也是预训练，但是是在其他通用数据集上完成的
+    model = r2plus1d_18(pretrained=False, num_classes=num_classes)
+    for index in range(startIndex, endIndex+1):
+        # 载入训练模型，这里的训练模型来源于暂停训练后保留的模型
+        modelName = f"./models/3dcnn_{index}.pth"
+        print(f"测试模型: {modelName}")
+        checkpoint = torch.load(modelName)
+        model.load_state_dict(checkpoint)  # 重新载入含有训练权重的模型
+        model = model.to(device)
+        test_epoch(model, test_loader, device, None)
 
 
 # Train with 3DCNN
 if __name__ == '__main__':
-    main()
+    # train()
+    test(3, 7)

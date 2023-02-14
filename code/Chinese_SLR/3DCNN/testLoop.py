@@ -14,7 +14,6 @@ def test_epoch(model, dataloader, device, writer):
         inputs, labels = data['data'].to(device), data['label'].to(device)
 
         # forward
-        print(inputs.shape)
         outputs = model(inputs)
         if isinstance(outputs, list):
             outputs = outputs[0]
@@ -24,4 +23,4 @@ def test_epoch(model, dataloader, device, writer):
         score += accuracy_score(labels.squeeze().cpu().data.squeeze(
         ).numpy(), prediction.cpu().data.squeeze().numpy())
 
-    print(f"Test num: {dataNum} Test acc: {score/dataNum}%")
+    print(f"Test num: {dataNum*2} Test acc: {score*100/dataNum}%")
