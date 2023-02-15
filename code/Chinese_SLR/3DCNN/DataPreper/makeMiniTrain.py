@@ -26,5 +26,6 @@ def makeMiniTrain(size=20):
 
 
 if __name__ == "__main__":
-    # makeDirStruct()
-    makeMiniTrain()
+    os.mkdir(miniTrainPath)
+    makeDirStruct()
+    makeMiniTrain(80)

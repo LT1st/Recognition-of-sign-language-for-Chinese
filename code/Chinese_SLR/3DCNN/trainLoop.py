@@ -39,7 +39,7 @@ def train_epoch(model, loss_fn, optimizer, dataloader, device, epoch, log_interv
                 epoch, batch_idx+1, loss.item(), (score/log_interval)*100))
             score = 0
 
-        if (batch_idx == 500):
+        if (batch_idx == 1200):
             break
 
     # Compute the average loss & accuracy

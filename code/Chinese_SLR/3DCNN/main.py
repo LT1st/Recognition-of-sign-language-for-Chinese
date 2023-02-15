@@ -41,10 +41,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Hyperparams
 num_classes = 500  # 最终的分类目标数
 dataSize = 240
-start_model = 1
-epochs = 1  # 训练轮数
+start_model = 8
+epochs = 2  # 训练轮数
 batch_size = 6
-learning_rate = 0.01  # 0.003-0.001 Train 0.0004-0.0001 Finetune
+learning_rate = 0.001  # 0.003-0.001 Train 0.0004-0.0001 Finetune
 weight_decay = 1e-4  # 1e-4
 log_interval = 100   # 注册间隔
 sample_size = 96
@@ -93,8 +93,8 @@ def test(startIndex, endIndex):
                                     transforms.ToTensor(),
                                     transforms.Normalize(mean=[0.5], std=[0.5])])
 
-    testSet = SignDataset(data_path=testPath, frames=sample_duration,
-                          dataSize=dataSize, train=False, transform=transform)
+    testSet = SignDataset(dataPath=testPath, frames=sample_duration,
+                          dataSize=10, train=False, transform=transform)
 
     testLoader = DataLoader(
         testSet, batch_size=2, shuffle=False, pin_memory=True)
@@ -115,4 +115,4 @@ def test(startIndex, endIndex):
 # Train with 3DCNN
 if __name__ == '__main__':
     train()
-    # test(3, 7)
+    # test(2, 3)
