@@ -9,6 +9,7 @@ def train_epoch(model, loss_fn, optimizer, dataloader, device, epoch, log_interv
     # all_label = []
     # all_pred = []
 
+    print('-'*30, f"Train epoch {epoch}", '-'*30)
     for batch_idx, data in enumerate(dataloader):
         # get the inputs and labels
         inputs, labels = data['data'].to(device), data['label'].to(device)
@@ -39,7 +40,7 @@ def train_epoch(model, loss_fn, optimizer, dataloader, device, epoch, log_interv
                 epoch, batch_idx+1, loss.item(), (score/log_interval)*100))
             score = 0
 
-        if (batch_idx == 1200):
+        if (batch_idx == 1500):
             break
 
     # Compute the average loss & accuracy

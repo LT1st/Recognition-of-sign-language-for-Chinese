@@ -41,8 +41,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Hyperparams
 num_classes = 500  # 最终的分类目标数
 dataSize = 240
-start_model = 8
-epochs = 2  # 训练轮数
+start_model = 13
+epochs = 4  # 训练轮数
 batch_size = 6
 learning_rate = 0.001  # 0.003-0.001 Train 0.0004-0.0001 Finetune
 weight_decay = 1e-4  # 1e-4
@@ -61,7 +61,7 @@ def train():
                            dataSize=dataSize, train=True, transform=transform)
 
     trainLoader = DataLoader(
-        trainSet, batch_size=batch_size, shuffle=True, pin_memory=True)
+        trainSet, batch_size=batch_size, shuffle=True, num_workers=6, pin_memory=True)
     # 模型相关
 
     # 这里载入的模型虽然也是预训练，但是是在其他通用数据集上完成的
@@ -97,7 +97,7 @@ def test(startIndex, endIndex):
                           dataSize=10, train=False, transform=transform)
 
     testLoader = DataLoader(
-        testSet, batch_size=2, shuffle=False, pin_memory=True)
+        testSet, batch_size=2, shuffle=False, num_workers=4, pin_memory=True)
     # 模型相关
 
     # 这里载入的模型虽然也是预训练，但是是在其他通用数据集上完成的
@@ -115,4 +115,4 @@ def test(startIndex, endIndex):
 # Train with 3DCNN
 if __name__ == '__main__':
     train()
-    # test(2, 3)
+    # test(11, 13)

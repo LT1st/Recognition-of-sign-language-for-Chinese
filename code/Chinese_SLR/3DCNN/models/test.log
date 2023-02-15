@@ -12,3 +12,14 @@ Test num: 5000 Test acc: 81.2%
 Test num: 5000 Test acc: 83.26%
 测试模型: ./models/3dcnn_8.pth
 Test num: 5000 Test acc: 84.06%
+测试模型: ./models/3dcnn_9.pth
+Test num: 5000 Test acc: 85.1%
+测试模型: ./models/3dcnn_10.pth
+Test num: 5000 Test acc: 87.98%
+测试模型: ./models/3dcnn_11.pth
+Test num: 5000 Test acc: 87.24%
+测试模型: ./models/3dcnn_12.pth
+Test num: 5000 Test acc: 87.42%
+测试模型: ./models/3dcnn_13.pth
+Test num: 5000 Test acc: 88.46%
+
