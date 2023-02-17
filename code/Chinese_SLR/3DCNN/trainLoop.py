@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score
 
 def train_epoch(model, loss_fn, optimizer, dataloader, device, epoch, log_interval, writer):
     model.train()
-    losses = []
+    # losses = []
     score = 0
     # all_label = []
     # all_pred = []
@@ -13,23 +13,24 @@ def train_epoch(model, loss_fn, optimizer, dataloader, device, epoch, log_interv
     for batch_idx, data in enumerate(dataloader):
         # get the inputs and labels
         inputs, labels = data['data'].to(device), data['label'].to(device)
-
+        labels = labels.squeeze()
         optimizer.zero_grad()
         # forward
         outputs = model(inputs)
         if isinstance(outputs, list):
             outputs = outputs[0]
         # compute the loss
-        loss = loss_fn(outputs, labels.squeeze())
-        losses.append(loss.item())
+        loss = loss_fn(outputs, labels)
+        # losses.append(loss.item())
 
         # compute the accuracy
         prediction = torch.max(outputs, 1).indices
         # all_label.extend(labels.squeeze())
         # all_pred.extend(prediction)
 
-        score += accuracy_score(labels.squeeze().cpu().data.squeeze(
+        score += accuracy_score(labels.cpu().data.squeeze(
         ).numpy(), prediction.cpu().data.squeeze().numpy())
+
         # backward & optimize
         loss.backward()
         optimizer.step()
@@ -40,9 +41,8 @@ def train_epoch(model, loss_fn, optimizer, dataloader, device, epoch, log_interv
                 epoch, batch_idx+1, loss.item(), (score/log_interval)*100))
             score = 0
 
-        if (batch_idx == 1500):
+        if (batch_idx == 1400):
             break
-
     # Compute the average loss & accuracy
     # training_loss = sum(losses)/len(losses)
     # all_label = torch.stack(all_label, dim=0)

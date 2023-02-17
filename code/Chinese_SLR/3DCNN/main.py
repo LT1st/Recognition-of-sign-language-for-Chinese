@@ -20,13 +20,13 @@ class LabelSmoothingCrossEntropy(nn.Module):
     def __init__(self):
         super(LabelSmoothingCrossEntropy, self).__init__()
 
-    def forward(self, x, target, smoothing=0.1):
-        confidence = 1. - smoothing
-        logprobs = F.log_softmax(x, dim=-1)
-        nll_loss = -logprobs.gather(dim=-1, index=target.unsqueeze(1))
-        nll_loss = nll_loss.squeeze(1)
-        smooth_loss = -logprobs.mean(dim=-1)
-        loss = confidence * nll_loss + smoothing * smooth_loss
+    def forward(self, pred: torch.Tensor, target: torch.Tensor, smoothing: float = 0.1):
+        classNum = pred.shape[1]
+        logProbs = F.log_softmax(pred, dim=1)
+        oneHotTarget = F.one_hot(target, classNum)
+        oneHotTarget = torch.clamp(
+            oneHotTarget.float(), min=smoothing/(classNum-1), max=1-smoothing)
+        loss = - torch.sum(oneHotTarget*logProbs, 1)
         return loss.mean()
 
 
@@ -41,10 +41,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Hyperparams
 num_classes = 500  # 最终的分类目标数
 dataSize = 240
-start_model = 13
-epochs = 4  # 训练轮数
+start_model = 20
+epochs = 1  # 训练轮数
 batch_size = 6
-learning_rate = 0.001  # 0.003-0.001 Train 0.0004-0.0001 Finetune
+learning_rate = 0.0001  # 0.003-0.001 Train 0.0004-0.0001 Finetune
 weight_decay = 1e-4  # 1e-4
 log_interval = 100   # 注册间隔
 sample_size = 96
@@ -76,8 +76,9 @@ def train():
     model = model.to(device)
 
     loss_fn = LabelSmoothingCrossEntropy()
+    # loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.SGD(  # 显存不足,被迫改优化器
-        model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        model.parameters(), lr=learning_rate, momentum=0.85, weight_decay=weight_decay)
 
     # Start training
     for epoch in range(start_model, start_model+epochs):
@@ -97,7 +98,7 @@ def test(startIndex, endIndex):
                           dataSize=10, train=False, transform=transform)
 
     testLoader = DataLoader(
-        testSet, batch_size=2, shuffle=False, num_workers=4, pin_memory=True)
+        testSet, batch_size=3, shuffle=True, num_workers=4, pin_memory=True)
     # 模型相关
 
     # 这里载入的模型虽然也是预训练，但是是在其他通用数据集上完成的
@@ -114,5 +115,5 @@ def test(startIndex, endIndex):
 
 # Train with 3DCNN
 if __name__ == '__main__':
-    train()
-    # test(11, 13)
+    # train()
+    test(19, 20)

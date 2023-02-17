@@ -22,4 +22,17 @@ Test num: 5000 Test acc: 87.24%
 Test num: 5000 Test acc: 87.42%
 测试模型: ./models/3dcnn_13.pth
 Test num: 5000 Test acc: 88.46%
-
+测试模型: ./models/3dcnn_14.pth
+Test num: 5000 Test acc: 90.68%
+测试模型: ./models/3dcnn_15.pth
+Test num: 5000 Test acc: 89.5820835832837%
+测试模型: ./models/3dcnn_16.pth
+Test num: 5000 Test acc: 81.76364727054617%
+测试模型: ./models/3dcnn_17.pth
+Test num: 5000 Test acc: 89.98200359928042%
+测试模型: ./models/3dcnn_18.pth
+Test num: 5000 Test acc: 92.50149970006025%
+测试模型: ./models/3dcnn_19.pth
+Test num: 5000 Test acc: 93.20135972805453%
+测试模型: ./models/3dcnn_20.pth
+Test num: 5000 Test acc: 93.44131173765275%
