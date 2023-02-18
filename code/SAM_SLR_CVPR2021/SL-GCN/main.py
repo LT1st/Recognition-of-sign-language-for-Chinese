@@ -235,7 +235,7 @@ class Processor():
             num_workers=self.arg.num_worker,
             drop_last=False,
             worker_init_fn=init_seed)
-
+   #  是撒多
     def load_model(self):
         output_device = self.arg.device[0] if type(
             self.arg.device) is list else self.arg.device
