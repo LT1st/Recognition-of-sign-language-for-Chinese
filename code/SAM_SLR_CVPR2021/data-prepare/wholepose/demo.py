@@ -111,9 +111,10 @@ def main():
         start_step = 6
         # paths = paths[start_step*step:(start_step+1)*step]
         # names = names[start_step*step:(start_step+1)*step]
-        # ���Ǹ�ɶ��
-        paths = paths[4200:]
-        names = names[4200:]
+        # paths = paths[4200:]
+        # names = names[4200:]
+        paths = paths[:]
+        names = names[:]
         paths = paths[::-1]
         names = names[::-1]
 
