@@ -33,6 +33,8 @@ import torch.nn.functional as F
 #         return loss.mean()
 
 # 随机种子
+
+
 def init_seed(_):
     torch.cuda.manual_seed_all(1)
     torch.manual_seed(1)
@@ -43,6 +45,8 @@ def init_seed(_):
     torch.backends.cudnn.benchmark = False
 
 # 参数
+
+
 def get_parser():
     # parameter priority: command line > config > default
     parser = argparse.ArgumentParser(
@@ -188,7 +192,7 @@ def get_parser():
 
 class Processor():
     """ 
-        Processor for Skeleton-based Action Recgnition
+       基于骨架的动作识别处理器
     """
 
     def __init__(self, arg):
@@ -218,6 +222,8 @@ class Processor():
         self.best_acc = 0
 
     def load_data(self):
+        """这段代码是一个函数，主要的作用是加载训练和测试数据集，使用的数据集类型是由self.arg.feeder指定的
+        """
         Feeder = import_class(self.arg.feeder)
         self.data_loader = dict()
         if self.arg.phase == 'train':
@@ -237,6 +243,8 @@ class Processor():
             worker_init_fn=init_seed)
 
     def load_model(self):
+        """该函数加载模型、其相关损失函数和预训练权重（如果可用）。
+        """
         output_device = self.arg.device[0] if type(
             self.arg.device) is list else self.arg.device
         self.output_device = output_device
@@ -247,6 +255,9 @@ class Processor():
         self.loss = nn.CrossEntropyLoss().cuda(output_device)
         # self.loss = LabelSmoothingCrossEntropy().cuda(output_device)
 
+        # 如果指定了self.arg.weights（预训练权重），则函数将加载这些权重并更新模型的参数。
+        # 如果指定的文件是.pkl文件，则函数以只读方式打开该文件，并从中加载权重。
+        # 如果该文件不是.pcl文件，则该函数使用PyTorch的torch.load（）方法加载权重。
         if self.arg.weights:
             self.print_log('Load weights from {}.'.format(self.arg.weights))
             if '.pkl' in self.arg.weights:
@@ -255,6 +266,8 @@ class Processor():
             else:
                 weights = torch.load(self.arg.weights)
 
+            # 该函数初始化一个权重OrderedDict，该权重移除self.arg.ignore_weights参数中指定的任何忽略权重。
+            # 使用加载的权重更新模型的状态字典，函数打印出哪些权重被成功删除，哪些权重找不到。
             weights = OrderedDict(
                 [[k.split('module.')[-1],
                   v.cuda(output_device)] for k, v in weights.items()])
@@ -276,6 +289,7 @@ class Processor():
                 state.update(weights)
                 self.model.load_state_dict(state)
 
+        # 如果指定了多个设备，则使用nn.Dataarallel（）将模型加载到指定的设备中。
         if type(self.arg.device) is list:
             if len(self.arg.device) > 1:
                 self.model = nn.DataParallel(
@@ -284,7 +298,10 @@ class Processor():
                     output_device=output_device)
 
     def load_optimizer(self):
-        # 梯度下降函数
+        """此load_optimizer函数用于初始化优化器以训练模型。"""
+
+        # 如果优化器是SGD，该函数将遍历所有模型参数，并创建一个列表参数，其中包含每个参数、其学习率乘数、权重衰减乘数以及是否应该衰减。
+        # 然后，这些值通过输入参数指定的动量和nesterov设置传递给optim.SGD优化器。
         if self.arg.optimizer == 'SGD':
 
             params_dict = dict(self.model.named_parameters())
@@ -303,6 +320,7 @@ class Processor():
                 params,
                 momentum=0.9,
                 nesterov=self.arg.nesterov)
+        # 如果优化器是Adam，则该函数使用指定的学习速率和权重衰减来初始化optim.Adam优化器。
         elif self.arg.optimizer == 'Adam':
             self.optimizer = optim.Adam(
                 self.model.parameters(),
@@ -311,13 +329,14 @@ class Processor():
         else:
             raise ValueError()
 
+        # 还创建了ReduceLROnPlateau调度器，以在训练期间模型停止改进时降低学习率。
         self.lr_scheduler = ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1,
                                               patience=10, verbose=True,
                                               threshold=1e-4, threshold_mode='rel',
                                               cooldown=0)
 
     def save_arg(self):
-        # save arg
+        # 将实验的配置保存到YAML文件中
         arg_dict = vars(self.arg)
 
         if not os.path.exists(self.arg.work_dir):
@@ -328,6 +347,9 @@ class Processor():
             yaml.dump(arg_dict, f)
 
     def adjust_learning_rate(self, epoch):
+        """ 此函数根据训练时间调整学习率。它使用步进学习速率调度器，其中学习速率在特定时期乘以因子。在预热阶段之前，学习率线性增加。
+            该函数返回新的学习率。如果使用了除SGD或Adam之外的优化器，则该函数将引发ValueError。 
+        """
         if self.arg.optimizer == 'SGD' or self.arg.optimizer == 'Adam':
             if epoch < self.arg.warm_up_epoch:
                 lr = self.arg.base_lr * (epoch + 1) / self.arg.warm_up_epoch
@@ -365,12 +387,14 @@ class Processor():
     def train(self, epoch, save_model=False):
         self.model.train()
         self.print_log('Training epoch: {}'.format(epoch + 1))
+        # 获取训练集的数据加载器，并根据当前时期调整学习率。
         loader = self.data_loader['train']
         self.adjust_learning_rate(epoch)
         loss_value = []
         self.record_time()
         timer = dict(dataloader=0.001, model=0.001, statistics=0.001)
         process = tqdm(loader)
+        # 根据当前历元是否大于或等于某个阈值，将某些参数的requires_grad属性设置为True或False。
         if epoch >= self.arg.only_train_epoch:
             print('only train part, require grad')
             for key, value in self.model.named_parameters():
@@ -383,6 +407,7 @@ class Processor():
                 if 'DecoupleA' in key:
                     value.requires_grad = False
                     print(key + '-not require grad')
+        # 训练
         for batch_idx, (data, label, index) in enumerate(process):
             self.global_step += 1
             # get data
@@ -484,7 +509,7 @@ class Processor():
                                 f_r.write(str(x) + ',' + str(true[i]) + '\n')
                             if x != true[i] and wrong_file is not None:
                                 f_w.write(str(index[i]) + ',' +
-                                        str(x) + ',' + str(true[i]) + '\n')
+                                          str(x) + ',' + str(true[i]) + '\n')
                 score = np.concatenate(score_frag)
 
                 if 'UCLA' in arg.Experiment_name:
@@ -502,7 +527,7 @@ class Processor():
                         pickle.dump(score_dict, f)
 
                 print('Eval Accuracy: ', accuracy,
-                    ' model: ', self.arg.model_saved_name)
+                      ' model: ', self.arg.model_saved_name)
 
                 score_dict = dict(
                     zip(self.data_loader[ln].dataset.sample_name, score))
@@ -516,7 +541,9 @@ class Processor():
                         epoch, accuracy), 'wb') as f:
                     pickle.dump(score_dict, f)
         return np.mean(loss_value)
+
     def start(self):
+        # 如果它处于训练模式，它将按照指定的时间段数训练模型
         if self.arg.phase == 'train':
             self.print_log('Parameters:\n{}\n'.format(str(vars(self.arg))))
             self.global_step = self.arg.start_epoch * \
@@ -536,7 +563,7 @@ class Processor():
 
             print('best accuracy: ', self.best_acc,
                   ' model_name: ', self.arg.model_saved_name)
-
+        # 如果它处于测试模式，则根据测试数据评估模型。
         elif self.arg.phase == 'test':
             if not self.arg.test_feeder_args['debug']:
                 wf = self.arg.model_saved_name + '_wrong.txt'
@@ -551,6 +578,7 @@ class Processor():
             self.eval(epoch=self.arg.start_epoch, save_score=self.arg.save_score,
                       loader_name=['test'], wrong_file=wf, result_file=rf)
             self.print_log('Done.\n')
+
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
