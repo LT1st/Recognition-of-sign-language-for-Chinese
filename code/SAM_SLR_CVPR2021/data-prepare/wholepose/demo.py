@@ -94,7 +94,7 @@ def main():
             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
         ])
 
-        input_path = '../../data/val'
+        input_path = 'train'
         paths = []
         names = []
         for root, _, fnames in natsorted(os.walk(input_path)):
@@ -111,7 +111,7 @@ def main():
         start_step = 6
         # paths = paths[start_step*step:(start_step+1)*step]
         # names = names[start_step*step:(start_step+1)*step]
-        # ÕâÊÇ¸ÉÉ¶µÄ
+        # ï¿½ï¿½ï¿½Ç¸ï¿½É¶ï¿½ï¿½
         paths = paths[4200:]
         names = names[4200:]
         paths = paths[::-1]
