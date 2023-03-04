@@ -68,8 +68,8 @@ UPLOAD video
         // Grab elements, create settings, etc.
         var video = document.getElementById('video');
         var num = 0;
-        var res_z=["情况","冰淇淋","饼干","橙色"]
-        var res_e=["Situation" ,"Ice cream", "cookies" ,"Orange"]
+        var res_z=[]
+        var res_e=[]
         // Get access to the camera!
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             // Not adding `{ audio: true }` since we only want video now
@@ -128,14 +128,15 @@ UPLOAD video
 
         //结束定时
         function end(){
+            RSL()
             sleep(1000)
-            document.getElementById("res").value=res_z[num]
-            document.getElementById("rese").value=res_e[num]
-            var utterThis = new window.SpeechSynthesisUtterance(res_z[num]);
-            var utterThise = new window.SpeechSynthesisUtterance(res_e[num]);
+            document.getElementById("res").value=res_z[0]
+            // document.getElementById("rese").value=res_e[num]
+            var utterThis = new window.SpeechSynthesisUtterance(res_z[0]);
+            // var utterThise = new window.SpeechSynthesisUtterance(res_e[num]);
             window.speechSynthesis.speak(utterThis);
-            window.speechSynthesis.speak(utterThise);
-            num++;
+            // window.speechSynthesis.speak(utterThise);
+            // num++;
             // clearInterval(time);
         }
 
@@ -151,7 +152,7 @@ UPLOAD video
             timeout:10000,
             async: true,
             success: function (htmlVal) {
-                console.log(htmlVal)
+                res_z.append(htmlVal)
             },
             error: function(data) {
             },
