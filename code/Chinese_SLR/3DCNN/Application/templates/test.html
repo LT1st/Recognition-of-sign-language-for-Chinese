@@ -1,0 +1,226 @@
+<!DOCTYPE html >
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="generator" content="PSPad editor, www.pspad.com">
+        <title></title>
+        <script src="{{ url_for('static', filename='js/jquery-1.7.1.min.js') }}"></script>
+        <script type="text/javascript" src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+         <!-- ZUI 标准版压缩后的 CSS 文件 -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/zui/1.10.0/css/zui.min.css">
+
+<!-- ZUI Javascript 依赖 jQuery -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/zui/1.10.0/lib/jquery/jquery.js"></script>
+<!-- ZUI 标准版压缩后的 JavaScript 文件 -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/zui/1.10.0/js/zui.min.js"></script>
+        <title>Recognition of sign language (deaf people) for chinese</title>
+         <style>
+ .ss{
+ border: 1px solid #84F8EF ;
+ font-family: 黑体;
+ font-size: 20px;
+ width: 150px;
+ height: 50px;
+ text-align: center;
+ line-height: 50px;
+ border-radius: 20px;
+ color: #DBD1F5;
+ background-color: #F59A43 ;
+ transition: 2s;
+ }
+ .ss:hover{
+ color: white;
+ background-color: #8FF962 ;
+ box-shadow: 2px 2px 10px #8FF962 ,
+ -2px 2px 10px #D1F276,
+ 2px -2px 10px #D1F276,
+ -2px -2px 10px #D1F276;
+ }
+ </style>
+    </head>
+    <body style=" background-image: url(./img_1.PNG);">
+    <nav class="navbar navbar-inverse" role="navigation" style=" font-family: 黑体;  font-size: 20px;">
+  Recognition of sign language (deaf people) for chinese
+</nav>
+    <video id="video" width="640" height="480" ></video>
+    <span class="label label-badge label-info" style=" font-family: 黑体;  font-size: 20px;">Chinese</span>
+
+    <input id="res" type="text" size="10" maxlength="30" value="">
+    <span class="label label-badge label-info" style=" font-family: 黑体;  font-size: 20px;">English</span>
+    <input id="rese" type="text" size="10" maxlength="30" value="">
+    <canvas id="canvas" visible="false"  width="640" height="480"></canvas>
+    <br>
+<div class="ss" id="start">
+START RSL
+ </div>
+     <br>
+<div class="ss" id="end">
+END RSL
+ </div>
+    <br>
+    <div class="ss" id="upload">
+UPLOAD video
+        <input type="file" id="file-btn" onchange="selectFile(event)" accept=".mp4,.avi" style="display: none;">
+ </div>
+
+     <br>
+    <script type="text/javascript">
+        // Grab elements, create settings, etc.
+        var video = document.getElementById('video');
+        var num = 0;
+        var res_z=["情况","冰淇淋","饼干","橙色"]
+        var res_e=["Situation" ,"Ice cream", "cookies" ,"Orange"]
+        // Get access to the camera!
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            // Not adding `{ audio: true }` since we only want video now
+            navigator.mediaDevices.getUserMedia({video: true}).then(function (stream) {
+                //video.src = window.URL.createObjectURL(stream);
+                video.srcObject = stream;
+                video.play();
+            });
+        }
+
+
+        // Elements for taking the snapshot
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var video = document.getElementById('video');
+        // document.getElementById("snap").addEventListener("click", function () {
+        //         context.drawImage(video, 0, 0, 640, 480);
+        //     });
+
+        // Trigger photo take
+        // function save() {
+        //         context.drawImage(video, 0, 0, 640, 480);
+        // }
+
+        function saveAsLocalImage() {
+            context.drawImage(video, 0, 0, 640, 480);
+            var myCanvas = document.getElementById("canvas");
+            // here is the most important part because if you dont replace you will get a DOM 18 exception.
+            // var image = myCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream;Content-Disposition: attachment;filename=foobar.png");
+            var image = myCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+            // window.location.href = image; // it will save locally
+            // create temporary link
+            var tmpLink = document.createElement('a');
+            fileName=num+".jpg"
+            tmpLink.download = fileName; // set the name of the download file
+            tmpLink.href = image;
+            console.log(num)
+            // temporarily add link to body and initiate the download
+            document.body.appendChild(tmpLink);
+            tmpLink.click();
+            document.body.removeChild(tmpLink);
+        }
+        var time=null
+
+        // 定时执行，1秒30帧
+        function start(){
+             time=window.setInterval(saveAsLocalImage, 25);
+        }
+        //sleep
+        function sleep(delay) {
+        var start = (new Date()).getTime();
+         while ((new Date()).getTime() - start < delay) {
+            continue;
+        }
+        }
+
+        //结束定时
+        function end(){
+            sleep(1000)
+            document.getElementById("res").value=res_z[num]
+            document.getElementById("rese").value=res_e[num]
+            var utterThis = new window.SpeechSynthesisUtterance(res_z[num]);
+            var utterThise = new window.SpeechSynthesisUtterance(res_e[num]);
+            window.speechSynthesis.speak(utterThis);
+            window.speechSynthesis.speak(utterThise);
+            num++;
+            // clearInterval(time);
+        }
+
+        // 做手语识别
+        function RSL(){
+            var uploadAjax = $.ajax({
+            type: "post",
+            //后端需要调用的地址
+            url:"/RSL/",
+            data: "",
+            contentType:"json/application",
+            //设置超时
+            timeout:10000,
+            async: true,
+            success: function (htmlVal) {
+                console.log(htmlVal)
+            },
+            error: function(data) {
+            },
+            //调用执行后调用的函数
+            complete: function (XMLHttpRequest, textStatus) {
+                if(textStatus == 'timeout'){
+                    uploadAjax.abort(); //取消请求
+                    //超时提示：请求超时，请重试
+                    alert("请求超时，请重试")
+                    //请求超时返回首页
+                    closeCard();
+                }
+            }
+        });
+        }
+        // Trigger photo save
+        // document.getElementById("save").addEventListener("click", function () {
+        //     saveAsLocalImage();
+        // });
+        document.getElementById("start").addEventListener("click", function () {
+            // start();
+        });
+        document.getElementById("end").addEventListener("click", function () {
+            end();
+            // RSL();
+            // num=1;
+        });
+
+        //文件上
+        // var file = null // 要进行上传的文件
+  // 给上传按钮绑定点击事件
+  document.getElementById("upload").addEventListener("click", function () {
+    // 模拟点击上传的input 弹出文件选择框
+    document.querySelector('#file-btn').click()
+  });
+  // 获取点击上传  选择的文件
+  function selectFile(e) {
+    // 通过 e.target.files 获取到选择的文件 此处默认选择一个文件
+    // console.log('获取点击上传的文件---',e.dataTransfer.files[0]);
+    // 第二次验证选择的文件类型是否正确
+    file = e.target.files[0]
+      sleep(2000)
+      end()
+  }
+
+  // 拖拽上传获取对应文件
+  let dropBox=document.querySelector('#drop');
+      // 当文件在目标元素内移动时
+      dropBox.addEventListener('dragover',function(e){
+        // 阻止事件冒泡
+        e.stopPropagation();
+        // 阻止默认事件（与drop事件结合，阻止拖拽文件在浏览器打开的默认行为）
+        e.preventDefault();
+      })
+      // 当拖拽文件在目标元素内松开时
+      dropBox.addEventListener('drop',function(e){
+        // 阻止事件冒泡
+        e.stopPropagation();
+        // 阻止默认事件（与dragover事件结合，阻止拖拽文件在浏览器打开的默认行为）
+        e.preventDefault();
+        // 获取拖拽上传的文件（files是个数组 此处默认限制只能上传一个）
+        console.log('获取拖拽上传的文件---',e.dataTransfer.files[0]);
+        // 第二次验证选择的文件类型是否正确
+        if(e.dataTransfer.files[0].type == 'application/msword' || e.dataTransfer.files[0].type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          file = e.dataTransfer.files[0]
+        } else {
+          alert('请选择正确的文件类型')
+        }
+      })
+    </script>
+</body>
+</html>
